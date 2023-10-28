@@ -94,6 +94,21 @@ async function run() {
 			}
 		});
 
+		//Update
+		app.patch("/orders/:id", async (req, res) => {
+			const id = req.params.id;
+			const updatedOrder = req.body;
+			console.log("Updated status", updatedOrder);
+			const filter = { _id: new ObjectId(id) };
+			const updateDoc = {
+				$set: {
+					status: updatedOrder.status,
+				},
+			};
+			const result = await orderCollection.updateOne(filter, updateDoc);
+			res.send(result);
+		});
+
 		// Delete order
 		app.delete("/orders/:id", async (req, res) => {
 			try {
