@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -28,6 +28,51 @@ async function run() {
 	try {
 		// Connect
 		await client.connect();
+
+		// Service Collection
+		const serviceCollection = client.db("carDoctor").collection("services");
+		const orderCollection = client.db("carDoctor").collection("orders");
+
+		// Get all service data
+		app.get("/services", async (req, res) => {
+			try {
+				const result = await serviceCollection.find().toArray();
+				res.send(result);
+			} catch (error) {
+				console.log(error);
+			}
+		});
+
+		// Get signle service data
+		app.get("/services/:id", async (req, res) => {
+			try {
+				const id = req.params.id;
+				const query = { _id: new ObjectId(id) };
+
+				const options = {
+					projection: {
+						service_id: 1,
+						price: 1,
+						title: 1,
+						description: 1,
+					},
+				};
+
+				const result = await serviceCollection.findOne(query, options);
+				res.send(result);
+			} catch (error) {
+				console.log(error);
+			}
+		});
+
+		// Order related API
+
+		app.post("/orders", async (req, res) => {
+			const orderDataBody = req.body;
+			const result = await orderCollection.insertOne(orderDataBody);
+			res.send(result);
+		});
+
 		// Send ping
 		await client.db("admin").command({ ping: 1 });
 		console.log(
