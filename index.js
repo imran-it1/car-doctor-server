@@ -55,6 +55,7 @@ async function run() {
 						price: 1,
 						title: 1,
 						description: 1,
+						img: 1,
 					},
 				};
 
@@ -67,10 +68,28 @@ async function run() {
 
 		// Order related API
 
+		app.get("/orders", async (req, res) => {
+			try {
+				console.log(req.query.email);
+				let query = {};
+				if (req.query?.email) {
+					query = { customerEmail: req.query?.email };
+				}
+				const result = await orderCollection.find(query).toArray();
+				res.send(result);
+			} catch (error) {
+				console.error(error);
+			}
+		});
+
 		app.post("/orders", async (req, res) => {
-			const orderDataBody = req.body;
-			const result = await orderCollection.insertOne(orderDataBody);
-			res.send(result);
+			try {
+				const orderDataBody = req.body;
+				const result = await orderCollection.insertOne(orderDataBody);
+				res.send(result);
+			} catch (error) {
+				console.error(error);
+			}
 		});
 
 		// Send ping
