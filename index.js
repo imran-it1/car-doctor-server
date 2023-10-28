@@ -68,9 +68,10 @@ async function run() {
 
 		// Order related API
 
+		// Get specific order by query parameters
 		app.get("/orders", async (req, res) => {
 			try {
-				console.log(req.query.email);
+				// console.log(req.query);
 				let query = {};
 				if (req.query?.email) {
 					query = { customerEmail: req.query?.email };
@@ -81,11 +82,24 @@ async function run() {
 				console.error(error);
 			}
 		});
+		// Post customer order
 
 		app.post("/orders", async (req, res) => {
 			try {
 				const orderDataBody = req.body;
 				const result = await orderCollection.insertOne(orderDataBody);
+				res.send(result);
+			} catch (error) {
+				console.error(error);
+			}
+		});
+
+		// Delete order
+		app.delete("/orders/:id", async (req, res) => {
+			try {
+				const id = req.params.id;
+				const query = { _id: new ObjectId(id) };
+				const result = await orderCollection.deleteOne(query);
 				res.send(result);
 			} catch (error) {
 				console.error(error);
