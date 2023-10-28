@@ -1,6 +1,8 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -8,8 +10,14 @@ const port = process.env.PORT || 5000;
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(
+	cors({
+		origin: ["http://localhost:5173"],
+		credentials: true,
+	})
+);
 app.use(express.json());
+app.use(cookieParser());
 
 /*         MongoDB + ALL API      */
 
@@ -32,6 +40,24 @@ async function run() {
 		// Service Collection
 		const serviceCollection = client.db("carDoctor").collection("services");
 		const orderCollection = client.db("carDoctor").collection("orders");
+
+		// Auth related API
+		app.post("/jwt", async (req, res) => {
+			try {
+				const user = req.body;
+				const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {});
+				res
+					.cookie("accessToken", token, {
+						httpOnly: true,
+						secure: false,
+						// sameSite: "none",
+						// eta dile google chrome a kaj kore na
+					})
+					.send({ success: true });
+			} catch (error) {
+				console.error(error);
+			}
+		});
 
 		// Get all service data
 		app.get("/services", async (req, res) => {
@@ -97,7 +123,7 @@ async function run() {
 		//Update
 		app.patch("/orders/:id", async (req, res) => {
 			const id = req.params.id;
-			const updatedOrder = req.body;
+			// const updatedOrder = req.body;
 			console.log("Updated status", updatedOrder);
 			const filter = { _id: new ObjectId(id) };
 			const updateDoc = {
